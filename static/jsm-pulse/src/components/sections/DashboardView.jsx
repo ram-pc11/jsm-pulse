@@ -61,7 +61,7 @@ const DashboardView = () => {
   }
 
   if (!summary || !distribution || !projectsOverview || !insights || !recommendations) {
-    return <LoadingState label="Loading dashboard..." />
+    return <LoadingState label="Loading dashboard..." fullHeight />
   }
 
   return (

@@ -1,14 +1,20 @@
 import { useState } from 'react'
 
+// Public-folder assets must be resolved against the app's actual base URL --
+// Forge Custom UI serves the build from a nested, non-root path, so a
+// hardcoded "/icons/..." string (unlike paths in index.html) is never
+// rewritten by Vite's `base` config and 404s once deployed.
+const asset = (path) => `${import.meta.env.BASE_URL}${path}`
+
 const ICONS = {
-  brand: '/icons/jsm-pulse.svg',
-  dashboard: '/icons/dashboard.svg',
-  projects: '/icons/projects.svg',
-  incidents: '/icons/incidents.svg',
-  problems: '/icons/problems.svg',
-  changes: '/icons/changes.svg',
-  sla: '/icons/sla.svg',
-  settings: '/icons/settings.svg',
+  brand: asset('icons/jsm-pulse.svg'),
+  dashboard: asset('icons/dashboard.svg'),
+  projects: asset('icons/projects.svg'),
+  incidents: asset('icons/incidents.svg'),
+  problems: asset('icons/problems.svg'),
+  changes: asset('icons/changes.svg'),
+  sla: asset('icons/sla.svg'),
+  settings: asset('icons/settings.svg'),
 }
 
 const JSM_SUBITEMS = [
