@@ -9,6 +9,7 @@ import { getProjects, getProjectsSummary } from './projectResolvers.js';
 import {
   getDashboardSummary,
   getGradeSeverityDistribution,
+  getDashboardProjectsOverview,
   getAiInsights,
   getRecommendations,
 } from './dashboardResolvers.js';
@@ -30,6 +31,7 @@ resolver.define('getProjects', getProjects);
 resolver.define('getProjectsSummary', getProjectsSummary);
 resolver.define('getDashboardSummary', getDashboardSummary);
 resolver.define('getGradeSeverityDistribution', getGradeSeverityDistribution);
+resolver.define('getDashboardProjectsOverview', getDashboardProjectsOverview);
 resolver.define('getAiInsights', getAiInsights);
 resolver.define('getRecommendations', getRecommendations);
 resolver.define('askJsmPulseAgent', askJsmPulseAgent);

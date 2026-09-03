@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react'
 import PageHead from '../layout/PageHead.jsx'
 import LoadingState from '../shared/LoadingState.jsx'
-import ScoreCard from '../dashboard/ScoreCard.jsx'
 import MetricsRow from '../dashboard/MetricsRow.jsx'
 import Callouts from '../dashboard/Callouts.jsx'
 import AIInsightsPanel from '../dashboard/AIInsightsPanel.jsx'
 import RecommendationsPanel from '../dashboard/RecommendationsPanel.jsx'
 import GradeSeverityDistribution from '../dashboard/GradeSeverityDistribution.jsx'
 import SlaTicketMetrics from '../dashboard/SlaTicketMetrics.jsx'
-import AgentWorkload from '../dashboard/AgentWorkload.jsx'
 import AtRiskQueues from '../dashboard/AtRiskQueues.jsx'
 import FindingBreakdown from '../dashboard/FindingBreakdown.jsx'
 import SlaRatios from '../dashboard/SlaRatios.jsx'
-import QueueSources from '../dashboard/QueueSources.jsx'
+import ProjectsOverview from '../dashboard/ProjectsOverview.jsx'
 import {
   fetchDashboardSummary,
   fetchGradeSeverityDistribution,
+  fetchDashboardProjectsOverview,
   fetchAiInsights,
   fetchRecommendations,
 } from '../../services/dashboardService.js'
@@ -24,6 +23,7 @@ import { fetchAllServiceDesks } from '../../services/queueService.js'
 const DashboardView = () => {
   const [summary, setSummary] = useState(null)
   const [distribution, setDistribution] = useState(null)
+  const [projectsOverview, setProjectsOverview] = useState(null)
   const [insights, setInsights] = useState(null)
   const [recommendations, setRecommendations] = useState(null)
   const [serviceDeskId, setServiceDeskId] = useState(null)
@@ -35,14 +35,16 @@ const DashboardView = () => {
     Promise.all([
       fetchDashboardSummary(),
       fetchGradeSeverityDistribution(),
+      fetchDashboardProjectsOverview(),
       fetchAiInsights(),
       fetchRecommendations(),
       fetchAllServiceDesks().then((desks) => desks.items[0]?.id ?? null),
     ])
-      .then(([summaryResult, distributionResult, insightsResult, recommendationsResult, deskId]) => {
+      .then(([summaryResult, distributionResult, projectsOverviewResult, insightsResult, recommendationsResult, deskId]) => {
         if (cancelled) return
         setSummary(summaryResult)
         setDistribution(distributionResult.distribution)
+        setProjectsOverview(projectsOverviewResult)
         setInsights(insightsResult.insights)
         setRecommendations(recommendationsResult.recommendations)
         setServiceDeskId(deskId)
@@ -58,7 +60,7 @@ const DashboardView = () => {
     return <p className="text-sm text-red-600">Failed to load dashboard: {error.message}</p>
   }
 
-  if (!summary || !distribution || !insights || !recommendations) {
+  if (!summary || !distribution || !projectsOverview || !insights || !recommendations) {
     return <LoadingState label="Loading dashboard..." />
   }
 
@@ -68,8 +70,9 @@ const DashboardView = () => {
 
       <div className="flex flex-col gap-6">
         <Callouts insights={insights} />
-        <ScoreCard score={summary.score} grade={summary.grade} severity={summary.severity} />
         <MetricsRow metrics={summary.metrics} />
+
+        <ProjectsOverview overview={projectsOverview} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <AIInsightsPanel insights={insights} />
@@ -83,11 +86,7 @@ const DashboardView = () => {
 
         <SlaTicketMetrics metrics={summary.metrics} />
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <AtRiskQueues serviceDeskId={serviceDeskId} />
-          <QueueSources serviceDeskId={serviceDeskId} />
-          <AgentWorkload />
-        </div>
+        <AtRiskQueues serviceDeskId={serviceDeskId} />
 
         <FindingBreakdown insights={insights} />
       </div>

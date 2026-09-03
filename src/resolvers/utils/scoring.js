@@ -44,16 +44,3 @@ export function computeCompositeScore(counts) {
     severity: severityFromScore(score),
   };
 }
-
-export function buildSeverityDistribution(issues) {
-  const buckets = { Highest: 0, High: 0, Medium: 0, Low: 0, Lowest: 0 };
-
-  for (const issue of issues) {
-    const priority = issue.priority ?? 'Medium';
-    if (priority in buckets) {
-      buckets[priority] += 1;
-    }
-  }
-
-  return buckets;
-}

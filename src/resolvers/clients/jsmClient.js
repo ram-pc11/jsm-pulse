@@ -57,6 +57,27 @@ export async function getQueueIssues({ serviceDeskId, queueId, cursor, pageSize 
   };
 }
 
+// NOTE: the site-wide GET /rest/servicedeskapi/requesttype endpoint is
+// marked experimental and rejects requests from Forge with a 412 ("This API
+// is experimental. Experimental APIs are not guaranteed to be stable...").
+// Use the per-service-desk endpoint below instead, even though it means
+// fetching request types one project at a time.
+export async function getRequestTypes({ serviceDeskId, cursor, pageSize }) {
+  const start = toStartAt(cursor);
+  const params = new URLSearchParams({ start: String(start), limit: String(pageSize) });
+
+  const response = await api.asApp().requestJira(
+    route`/rest/servicedeskapi/servicedesk/${serviceDeskId}/requesttype?${params}`
+  );
+  const data = await getJson(response, 'JSM request type list fetch');
+
+  return {
+    values: data.values,
+    nextCursor: fromStartAt(start, pageSize, data.isLastPage),
+    isLast: data.isLastPage,
+  };
+}
+
 export async function getRequestApprovals(issueIdOrKey) {
   const response = await api.asApp().requestJira(
     route`/rest/servicedeskapi/request/${issueIdOrKey}/approval`

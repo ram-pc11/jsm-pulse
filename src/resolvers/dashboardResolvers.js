@@ -1,7 +1,10 @@
-import { countIssues, searchIssues } from './clients/jiraSearchClient.js';
+import { countIssues } from './clients/jiraSearchClient.js';
 import { getServiceDesks, getQueues } from './clients/jsmClient.js';
 import { getSlaOverview } from './slaResolvers.js';
-import { computeCompositeScore, buildSeverityDistribution } from './utils/scoring.js';
+import { getProjectsSummary, getTicketsByRequestType } from './projectResolvers.js';
+import { computeCompositeScore } from './utils/scoring.js';
+
+const PRIORITIES = ['Highest', 'High', 'Medium', 'Low', 'Lowest'];
 
 // "Open" excludes Resolved/Closed/Done, matching IncidentsView's client-side
 // definition -- kept in sync so the two views never disagree on what counts
@@ -60,17 +63,43 @@ export async function getDashboardSummary() {
   };
 }
 
+// Combines Projects section data for the dashboard: total project count,
+// total tickets across all JSM projects, tickets-per-project distribution,
+// and site-wide tickets-by-request-type distribution (see
+// projectResolvers.getTicketsByRequestType for how request types are
+// resolved -- it's an approximation based on merging request types that
+// share an underlying issue type).
+export async function getDashboardProjectsOverview() {
+  const [projectsSummary, requestTypeBreakdown] = await Promise.all([
+    getProjectsSummary(),
+    getTicketsByRequestType(),
+  ]);
+
+  return {
+    totalProjects: projectsSummary.totalProjects,
+    totalTickets: projectsSummary.totalTickets,
+    busiestProjectName: projectsSummary.busiestProjectName,
+    ticketsByProject: projectsSummary.distribution,
+    ticketsByRequestType: requestTypeBreakdown.distribution,
+  };
+}
+
+// Real per-priority counts via approximate-count -- a single sorted/capped
+// search would skew toward whichever priority sorts first (e.g. ORDER BY
+// priority DESC + a 100-item cap returns only Highest-priority tickets when
+// there are more than 100 total), so each priority is counted independently.
 export async function getGradeSeverityDistribution() {
-  const jql = 'issuetype in (Incident, Problem, Change) ORDER BY priority DESC';
-  const result = await searchIssues({ jql, cursor: null, pageSize: 100, fields: ['priority'] });
+  const counts = await Promise.all(
+    PRIORITIES.map((priority) => countIssues(`issuetype in (Incident, Problem, Change) AND priority = "${priority}"`))
+  );
 
-  const issues = result.issues.map((issue) => ({ priority: issue.fields.priority?.name }));
+  const distribution = Object.fromEntries(PRIORITIES.map((priority, i) => [priority, counts[i]]));
 
-  return { distribution: buildSeverityDistribution(issues) };
+  return { distribution };
 }
 
 export async function getAiInsights() {
-  const summary = await getDashboardSummary();
+  const [summary, projectsOverview] = await Promise.all([getDashboardSummary(), getDashboardProjectsOverview()]);
 
   const insights = [];
 
@@ -87,6 +116,20 @@ export async function getAiInsights() {
       id: 'incident-to-problem-ratio',
       severity: 'moderate',
       message: 'Incident volume is high relative to logged problems -- consider reviewing root-cause tracking.',
+    });
+  }
+
+  const projectTicketCounts = Object.values(projectsOverview.ticketsByProject);
+  const maxProjectTickets = projectTicketCounts.length > 0 ? Math.max(...projectTicketCounts) : 0;
+  if (
+    projectsOverview.totalTickets > 0 &&
+    maxProjectTickets / projectsOverview.totalTickets > 0.5 &&
+    projectsOverview.totalProjects > 1
+  ) {
+    insights.push({
+      id: 'project-concentration-high',
+      severity: 'moderate',
+      message: `${projectsOverview.busiestProjectName} accounts for over half of all tickets across ${projectsOverview.totalProjects} projects -- consider whether workload should be rebalanced.`,
     });
   }
 
