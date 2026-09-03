@@ -2,7 +2,8 @@ import { invoke, view } from '@forge/bridge'
 
 // Deliberately bypasses invokeClient.js's cached wrappers -- polling the same
 // jobId must hit the resolver fresh each time, not replay a cached "pending".
-export const askAgent = (question, history = []) => invoke('askJsmPulseAgent', { question, history })
+export const askAgent = (question, history = [], section = null) =>
+  invoke('askJsmPulseAgent', { question, history, section })
 
 // Custom UI is served from a Forge CDN origin, not the Jira site -- the real
 // site URL (for "View all in Jira" links) only comes from view.getContext().
@@ -16,7 +17,9 @@ export const getSiteUrl = () => {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function pollAgentJob(jobId, { intervalMs = 1500, timeoutMs = 90000 } = {}) {
+// timeoutMs stays under the consumer's 180s manifest timeout (see
+// manifest.yml's agent-consumer function) with headroom for polling overhead.
+export async function pollAgentJob(jobId, { intervalMs = 1500, timeoutMs = 170000 } = {}) {
   const deadline = Date.now() + timeoutMs
 
   while (Date.now() < deadline) {
