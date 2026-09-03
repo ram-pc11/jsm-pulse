@@ -1,6 +1,7 @@
-import { searchIssues, getIssue } from './clients/jiraSearchClient.js';
+import { searchIssues, getIssue, countIssues } from './clients/jiraSearchClient.js';
 
 const LINK_LOOKUP_CONCURRENCY = 5;
+const PRIORITIES = ['Highest', 'High', 'Medium', 'Low', 'Lowest'];
 
 function countLinkedIncidents(issuelinks = []) {
   return issuelinks.filter((link) => {
@@ -54,4 +55,18 @@ export async function getProblems({ payload }) {
     nextCursor: result.nextPageToken ?? null,
     isLast: !result.nextPageToken,
   };
+}
+
+// Real counts via approximate-count. Linked-incident stats have no JQL
+// equivalent (issue links aren't queryable that way) so they are NOT part of
+// this summary -- they stay derived from the fetched item list on the frontend.
+export async function getProblemsSummary() {
+  const [total, priorityCounts] = await Promise.all([
+    countIssues('issuetype = Problem'),
+    Promise.all(PRIORITIES.map((priority) => countIssues(`issuetype = Problem AND priority = "${priority}"`))),
+  ]);
+
+  const distribution = Object.fromEntries(PRIORITIES.map((priority, i) => [priority, priorityCounts[i]]));
+
+  return { total, distribution };
 }

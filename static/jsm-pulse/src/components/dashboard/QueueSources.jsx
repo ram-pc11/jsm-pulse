@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import LoadingState from '../shared/LoadingState.jsx'
-import { fetchAllQueues } from '../../services/serviceRequestService.js'
+import { fetchAllQueues } from '../../services/queueService.js'
 
 const QueueSources = ({ serviceDeskId }) => {
   const [queues, setQueues] = useState(null)
@@ -11,7 +11,7 @@ const QueueSources = ({ serviceDeskId }) => {
     let cancelled = false
 
     fetchAllQueues(serviceDeskId)
-      .then((result) => !cancelled && setQueues(result))
+      .then((result) => !cancelled && setQueues(result.items))
       .catch((err) => !cancelled && setError(err))
 
     return () => {

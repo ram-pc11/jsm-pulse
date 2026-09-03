@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import PageHead from '../layout/PageHead.jsx'
-import PaginatedList from '../shared/PaginatedList.jsx'
-import DataTable from '../shared/DataTable.jsx'
+import ServerPaginatedTable from '../shared/ServerPaginatedTable.jsx'
 import SeverityPill from '../shared/SeverityPill.jsx'
 import SectionSummary from '../shared/SectionSummary.jsx'
-import { fetchAllIncidents } from '../../services/incidentService.js'
-import { countBy } from '../../utils/aggregate.js'
+import LoadingState from '../shared/LoadingState.jsx'
+import { fetchIncidentsPage, fetchIncidentsSummary } from '../../services/incidentService.js'
 
 const COLUMNS = [
   { key: 'key', header: 'Key' },
@@ -16,37 +15,38 @@ const COLUMNS = [
 ]
 
 const IncidentsView = () => {
+  const [summary, setSummary] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchIncidentsSummary()
+      .then((result) => !cancelled && setSummary(result))
+      .catch((err) => !cancelled && setError(err))
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const metrics = summary && [
+    { label: 'Total Incidents', value: summary.total },
+    { label: 'Open', value: summary.open, accent: true },
+    { label: 'Resolved', value: summary.resolved },
+    { label: 'Unassigned', value: summary.unassigned },
+  ]
+
   return (
     <div>
       <PageHead title="Incidents" description="All open and recent incidents across your JSM projects." />
-      <PaginatedList fetchAll={fetchAllIncidents} loadingLabel="Loading incidents...">
-        {(items) => <IncidentsContent items={items} />}
-      </PaginatedList>
+
+      {error && <p className="mb-4 text-sm text-red-600">Failed to load summary: {error.message}</p>}
+      {!error && !summary && <LoadingState label="Loading summary..." />}
+      {summary && (
+        <SectionSummary metrics={metrics} distribution={summary.distribution} distributionLabel="Priority Distribution" />
+      )}
+
+      <ServerPaginatedTable fetchPage={fetchIncidentsPage} columns={COLUMNS} rowKey="key" />
     </div>
-  )
-}
-
-const IncidentsContent = ({ items }) => {
-  const { metrics, distribution } = useMemo(() => {
-    const resolved = items.filter((item) => item.status === 'Resolved' || item.status === 'Closed' || item.status === 'Done').length
-    const unassigned = items.filter((item) => item.assignee === 'Unassigned').length
-
-    return {
-      metrics: [
-        { label: 'Total Incidents', value: items.length },
-        { label: 'Open', value: items.length - resolved, accent: true },
-        { label: 'Resolved', value: resolved },
-        { label: 'Unassigned', value: unassigned },
-      ],
-      distribution: countBy(items, (item) => item.priority),
-    }
-  }, [items])
-
-  return (
-    <>
-      <SectionSummary metrics={metrics} distribution={distribution} distributionLabel="Priority Distribution" />
-      <DataTable columns={COLUMNS} rows={items} rowKey="key" />
-    </>
   )
 }
 

@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import PageHead from '../layout/PageHead.jsx'
-import PaginatedList from '../shared/PaginatedList.jsx'
-import DataTable from '../shared/DataTable.jsx'
+import ServerPaginatedTable from '../shared/ServerPaginatedTable.jsx'
 import SeverityPill from '../shared/SeverityPill.jsx'
 import SectionSummary from '../shared/SectionSummary.jsx'
-import { fetchAllProblems } from '../../services/problemService.js'
-import { countBy } from '../../utils/aggregate.js'
+import LoadingState from '../shared/LoadingState.jsx'
+import { fetchProblemsPage, fetchProblemsSummary } from '../../services/problemService.js'
 
 const COLUMNS = [
   { key: 'key', header: 'Key' },
@@ -20,37 +19,35 @@ const COLUMNS = [
 ]
 
 const ProblemsView = () => {
+  const [summary, setSummary] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchProblemsSummary()
+      .then((result) => !cancelled && setSummary(result))
+      .catch((err) => !cancelled && setError(err))
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div>
       <PageHead title="Problems" description="Root-cause problem records and their linked incidents." />
-      <PaginatedList fetchAll={fetchAllProblems} loadingLabel="Loading problems...">
-        {(items) => <ProblemsContent items={items} />}
-      </PaginatedList>
+
+      {error && <p className="mb-4 text-sm text-red-600">Failed to load summary: {error.message}</p>}
+      {!error && !summary && <LoadingState label="Loading summary..." />}
+      {summary && (
+        <SectionSummary
+          metrics={[{ label: 'Total Problems', value: summary.total, accent: true }]}
+          distribution={summary.distribution}
+          distributionLabel="Priority Distribution"
+        />
+      )}
+
+      <ServerPaginatedTable fetchPage={fetchProblemsPage} columns={COLUMNS} rowKey="key" />
     </div>
-  )
-}
-
-const ProblemsContent = ({ items }) => {
-  const { metrics, distribution } = useMemo(() => {
-    const withLinks = items.filter((item) => (item.linkedIncidentCount ?? 0) > 0).length
-    const totalLinkedIncidents = items.reduce((sum, item) => sum + (item.linkedIncidentCount ?? 0), 0)
-
-    return {
-      metrics: [
-        { label: 'Total Problems', value: items.length },
-        { label: 'With Linked Incidents', value: withLinks, accent: true },
-        { label: 'Total Linked Incidents', value: totalLinkedIncidents },
-        { label: 'No Links Yet', value: items.length - withLinks },
-      ],
-      distribution: countBy(items, (item) => item.priority),
-    }
-  }, [items])
-
-  return (
-    <>
-      <SectionSummary metrics={metrics} distribution={distribution} distributionLabel="Priority Distribution" />
-      <DataTable columns={COLUMNS} rows={items} rowKey="key" />
-    </>
   )
 }
 

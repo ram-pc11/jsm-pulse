@@ -4,8 +4,8 @@ const JSM_SUBITEMS = [
   { key: 'incidents', label: 'Incidents' },
   { key: 'problems', label: 'Problems' },
   { key: 'changes', label: 'Changes' },
-  { key: 'serviceRequests', label: 'Service Requests' },
   { key: 'sla', label: 'SLA' },
+  { key: 'projects', label: 'Projects' },
 ]
 
 const NavItem = ({ label, active, onClick, pill }) => (

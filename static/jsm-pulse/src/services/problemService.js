@@ -1,3 +1,7 @@
-import { invokePaginated } from './paginate.js';
+import { invokeResolver, invokeResolverCached } from './invokeClient.js';
 
-export const fetchAllProblems = (onProgress) => invokePaginated('getProblems', {}, onProgress);
+const PAGE_SIZE = 25;
+
+export const fetchProblemsPage = (cursor) => invokeResolver('getProblems', { cursor, pageSize: PAGE_SIZE });
+
+export const fetchProblemsSummary = () => invokeResolverCached('getProblemsSummary');

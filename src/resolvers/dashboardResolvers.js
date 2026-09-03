@@ -1,67 +1,41 @@
-import { searchIssues } from './clients/jiraSearchClient.js';
-import { getServiceDesks, getQueues, getQueueIssues, getRequestSla } from './clients/jsmClient.js';
+import { countIssues, searchIssues } from './clients/jiraSearchClient.js';
+import { getServiceDesks, getQueues } from './clients/jsmClient.js';
+import { getSlaOverview } from './slaResolvers.js';
 import { computeCompositeScore, buildSeverityDistribution } from './utils/scoring.js';
 
-const SUMMARY_SAMPLE_SIZE = 50;
-const SLA_LOOKUP_CONCURRENCY = 5;
+// "Open" excludes Resolved/Closed/Done, matching IncidentsView's client-side
+// definition -- kept in sync so the two views never disagree on what counts
+// as open.
+const OPEN_STATUS_EXCLUSION = 'status not in (Resolved, Closed, Done)';
 
-async function countIssuesFor(jql) {
-  const result = await searchIssues({ jql, cursor: null, pageSize: 1 });
-  return result.total ?? result.issues?.length ?? 0;
-}
-
-async function sampleSlaBreach() {
+// Samples SLA breach rate from the first service desk's queues (via
+// slaResolvers.getSlaOverview, which samples up to 25 tickets per queue --
+// see that file for why this isn't a full-backlog scan or JQL-based count).
+async function sampleDashboardSla() {
   const serviceDesksResult = await getServiceDesks({ cursor: null, pageSize: 1 });
   const serviceDesk = serviceDesksResult.values?.[0];
   if (!serviceDesk) return { breached: 0, tracked: 0 };
 
-  const queuesResult = await getQueues({ serviceDeskId: serviceDesk.id, cursor: null, pageSize: 1 });
-  const queue = queuesResult.values?.[0];
-  if (!queue) return { breached: 0, tracked: 0 };
-
-  const queueIssuesResult = await getQueueIssues({
-    serviceDeskId: serviceDesk.id,
-    queueId: queue.id,
-    cursor: null,
-    pageSize: SUMMARY_SAMPLE_SIZE,
-  });
-  const sampledIssues = queueIssuesResult.values ?? [];
+  const overview = await getSlaOverview({ payload: { serviceDeskId: serviceDesk.id, cursor: null, pageSize: 10 } });
 
   let breached = 0;
   let tracked = 0;
-
-  for (let i = 0; i < sampledIssues.length; i += SLA_LOOKUP_CONCURRENCY) {
-    const batch = sampledIssues.slice(i, i + SLA_LOOKUP_CONCURRENCY);
-    const batchResults = await Promise.all(
-      batch.map(async (issue) => {
-        try {
-          const sla = await getRequestSla(issue.issueKey ?? issue.key);
-          return sla?.values ?? [];
-        } catch {
-          return null;
-        }
-      })
-    );
-
-    for (const slaValues of batchResults) {
-      if (!slaValues || slaValues.length === 0) continue;
-      tracked += 1;
-      const anyBreached = slaValues.some(
-        (goal) => goal.ongoingCycle?.breached === true || goal.completedCycles?.some((c) => c.breached)
-      );
-      if (anyBreached) breached += 1;
-    }
+  for (const { sla } of overview.items) {
+    if (!sla) continue;
+    breached += sla.breached;
+    tracked += sla.tracked;
   }
 
   return { breached, tracked };
 }
 
 export async function getDashboardSummary() {
-  const [incidents, problems, changes, slaSample] = await Promise.all([
-    countIssuesFor('issuetype = Incident'),
-    countIssuesFor('issuetype = Problem'),
-    countIssuesFor('issuetype = Change'),
-    sampleSlaBreach(),
+  const [incidents, openIncidents, problems, changes, slaSample] = await Promise.all([
+    countIssues('issuetype = Incident'),
+    countIssues(`issuetype = Incident AND ${OPEN_STATUS_EXCLUSION}`),
+    countIssues('issuetype = Problem'),
+    countIssues('issuetype = Change'),
+    sampleDashboardSla(),
   ]);
 
   const { score, grade, severity } = computeCompositeScore({
@@ -78,6 +52,7 @@ export async function getDashboardSummary() {
     severity,
     metrics: {
       incidents,
+      openIncidents,
       problems,
       changes,
       slaBreachRate: slaSample.tracked > 0 ? slaSample.breached / slaSample.tracked : 0,

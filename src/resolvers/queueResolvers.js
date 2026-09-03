@@ -1,26 +1,4 @@
-import { getServiceDesks as getServiceDesksClient, getQueues as getQueuesClient, getRequests } from './clients/jsmClient.js';
-
-function mapRequest(request) {
-  return {
-    key: request.issueKey,
-    summary: request.requestFieldValues?.find((field) => field.fieldId === 'summary')?.value ?? '',
-    requestType: request.requestType?.name ?? 'Unknown',
-    status: request.currentStatus?.status ?? 'Unknown',
-    createdDate: request.createdDate?.iso8601 ?? null,
-  };
-}
-
-export async function getServiceRequests({ payload }) {
-  const { cursor = null, pageSize = 25 } = payload;
-
-  const result = await getRequests({ cursor, pageSize });
-
-  return {
-    items: result.values.map(mapRequest),
-    nextCursor: result.nextCursor,
-    isLast: result.isLast,
-  };
-}
+import { getServiceDesks as getServiceDesksClient, getQueues as getQueuesClient } from './clients/jsmClient.js';
 
 export async function getServiceDesks({ payload }) {
   const { cursor = null, pageSize = 25 } = payload;

@@ -57,20 +57,6 @@ export async function getQueueIssues({ serviceDeskId, queueId, cursor, pageSize 
   };
 }
 
-export async function getRequests({ cursor, pageSize }) {
-  const start = toStartAt(cursor);
-  const params = new URLSearchParams({ start: String(start), limit: String(pageSize) });
-
-  const response = await api.asApp().requestJira(route`/rest/servicedeskapi/request?${params}`);
-  const data = await getJson(response, 'JSM request list fetch');
-
-  return {
-    values: data.values,
-    nextCursor: fromStartAt(start, pageSize, data.isLastPage),
-    isLast: data.isLastPage,
-  };
-}
-
 export async function getRequestApprovals(issueIdOrKey) {
   const response = await api.asApp().requestJira(
     route`/rest/servicedeskapi/request/${issueIdOrKey}/approval`

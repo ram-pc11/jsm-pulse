@@ -1,10 +1,11 @@
 import Resolver from '@forge/resolver';
 
-import { getIncidents } from './incidentResolvers.js';
-import { getProblems } from './problemResolvers.js';
-import { getChanges } from './changeResolvers.js';
-import { getServiceRequests, getServiceDesks, getQueues } from './serviceRequestResolvers.js';
+import { getIncidents, getIncidentsSummary } from './incidentResolvers.js';
+import { getProblems, getProblemsSummary } from './problemResolvers.js';
+import { getChanges, getChangesSummary } from './changeResolvers.js';
+import { getServiceDesks, getQueues } from './queueResolvers.js';
 import { getSlaSummary, getSlaOverview } from './slaResolvers.js';
+import { getProjects, getProjectsSummary } from './projectResolvers.js';
 import {
   getDashboardSummary,
   getGradeSeverityDistribution,
@@ -15,13 +16,17 @@ import {
 const resolver = new Resolver();
 
 resolver.define('getIncidents', getIncidents);
+resolver.define('getIncidentsSummary', getIncidentsSummary);
 resolver.define('getProblems', getProblems);
+resolver.define('getProblemsSummary', getProblemsSummary);
 resolver.define('getChanges', getChanges);
-resolver.define('getServiceRequests', getServiceRequests);
+resolver.define('getChangesSummary', getChangesSummary);
 resolver.define('getServiceDesks', getServiceDesks);
 resolver.define('getQueues', getQueues);
 resolver.define('getSlaSummary', getSlaSummary);
 resolver.define('getSlaOverview', getSlaOverview);
+resolver.define('getProjects', getProjects);
+resolver.define('getProjectsSummary', getProjectsSummary);
 resolver.define('getDashboardSummary', getDashboardSummary);
 resolver.define('getGradeSeverityDistribution', getGradeSeverityDistribution);
 resolver.define('getAiInsights', getAiInsights);

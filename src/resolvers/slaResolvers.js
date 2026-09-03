@@ -5,7 +5,8 @@ const SLA_LOOKUP_CONCURRENCY = 5;
 const QUEUE_CONCURRENCY = 3;
 
 // Aggregates SLA breach % for a single queue. There is no queue-level SLA
-// aggregate endpoint, so this samples up to SLA_SAMPLE_SIZE tickets from the
+// aggregate endpoint and no reliable JQL breach predicate confirmed against
+// this instance, so this samples up to SLA_SAMPLE_SIZE tickets from the
 // queue and checks each ticket's SLA fields individually -- it does not scan
 // an entire 1000+ ticket backlog.
 async function sampleQueueSla(serviceDeskId, queueId) {

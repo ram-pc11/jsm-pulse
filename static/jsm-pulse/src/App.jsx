@@ -5,8 +5,8 @@ import DashboardView from './components/sections/DashboardView.jsx'
 import IncidentsView from './components/sections/IncidentsView.jsx'
 import ProblemsView from './components/sections/ProblemsView.jsx'
 import ChangesView from './components/sections/ChangesView.jsx'
-import ServiceRequestsView from './components/sections/ServiceRequestsView.jsx'
 import SlaView from './components/sections/SlaView.jsx'
+import ProjectsView from './components/sections/ProjectsView.jsx'
 import SettingsView from './components/settings/SettingsView.jsx'
 import AssistantLauncher from './components/assistant/AssistantLauncher.jsx'
 
@@ -15,8 +15,8 @@ const VIEWS = {
   incidents: IncidentsView,
   problems: ProblemsView,
   changes: ChangesView,
-  serviceRequests: ServiceRequestsView,
   sla: SlaView,
+  projects: ProjectsView,
   settings: SettingsView,
 }
 

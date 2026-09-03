@@ -16,7 +16,7 @@ const AtRiskQueues = ({ serviceDeskId }) => {
       .then((overview) => {
         if (!cancelled) {
           setRows(
-            overview
+            overview.items
               .filter((q) => q.sla)
               .sort((a, b) => b.sla.breachRate - a.sla.breachRate)
               .slice(0, 5)

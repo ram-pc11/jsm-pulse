@@ -1,7 +1,8 @@
-import { searchIssues } from './clients/jiraSearchClient.js';
+import { searchIssues, countIssues } from './clients/jiraSearchClient.js';
 import { getRequestApprovals } from './clients/jsmClient.js';
 
 const APPROVAL_LOOKUP_CONCURRENCY = 5;
+const PRIORITIES = ['Highest', 'High', 'Medium', 'Low', 'Lowest'];
 
 function summarizeApprovalStatus(approvalResponse) {
   const values = approvalResponse?.values ?? [];
@@ -56,4 +57,18 @@ export async function getChanges({ payload }) {
     nextCursor: result.nextPageToken ?? null,
     isLast: !result.nextPageToken,
   };
+}
+
+// Real counts via approximate-count. Approval status has no JQL equivalent
+// (it's per-request JSM data, not a queryable issue field) so it is NOT part
+// of this summary -- it stays derived from the fetched item list.
+export async function getChangesSummary() {
+  const [total, priorityCounts] = await Promise.all([
+    countIssues('issuetype = Change'),
+    Promise.all(PRIORITIES.map((priority) => countIssues(`issuetype = Change AND priority = "${priority}"`))),
+  ]);
+
+  const distribution = Object.fromEntries(PRIORITIES.map((priority, i) => [priority, priorityCounts[i]]));
+
+  return { total, distribution };
 }

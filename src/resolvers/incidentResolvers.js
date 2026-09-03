@@ -1,4 +1,7 @@
-import { searchIssues } from './clients/jiraSearchClient.js';
+import { searchIssues, countIssues } from './clients/jiraSearchClient.js';
+
+const OPEN_STATUS_EXCLUSION = 'status not in (Resolved, Closed, Done)';
+const PRIORITIES = ['Highest', 'High', 'Medium', 'Low', 'Lowest'];
 
 function mapIssue(issue) {
   return {
@@ -22,4 +25,19 @@ export async function getIncidents({ payload }) {
     nextCursor: result.nextPageToken ?? null,
     isLast: !result.nextPageToken,
   };
+}
+
+// Real counts via approximate-count -- not derived from a capped item list.
+export async function getIncidentsSummary() {
+  const [total, open, resolved, unassigned, priorityCounts] = await Promise.all([
+    countIssues('issuetype = Incident'),
+    countIssues(`issuetype = Incident AND ${OPEN_STATUS_EXCLUSION}`),
+    countIssues('issuetype = Incident AND status in (Resolved, Closed, Done)'),
+    countIssues('issuetype = Incident AND assignee is EMPTY'),
+    Promise.all(PRIORITIES.map((priority) => countIssues(`issuetype = Incident AND priority = "${priority}"`))),
+  ]);
+
+  const distribution = Object.fromEntries(PRIORITIES.map((priority, i) => [priority, priorityCounts[i]]));
+
+  return { total, open, resolved, unassigned, distribution };
 }

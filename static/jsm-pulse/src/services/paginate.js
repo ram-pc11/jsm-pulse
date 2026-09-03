@@ -7,6 +7,9 @@ const DEFAULT_MAX_PAGES = 20; // safety cap -- never loop unbounded
 // Cached per (resolverKey, pageSize, maxPages, extraParams) so revisiting a
 // section (e.g. switching sidebar tabs) does not re-invoke the resolver --
 // the cache persists until the page is reloaded.
+//
+// Returns { items, isCapped } -- isCapped is true when maxPages was hit
+// before the resolver reported isLast, meaning items may not be the full set.
 export function invokePaginated(resolverKey, { pageSize = DEFAULT_PAGE_SIZE, maxPages = DEFAULT_MAX_PAGES, extraParams = {} } = {}, onProgress) {
   return withCache(`paginated:${resolverKey}`, { pageSize, maxPages, extraParams }, async () => {
     let cursor = null;
@@ -23,10 +26,11 @@ export function invokePaginated(resolverKey, { pageSize = DEFAULT_PAGE_SIZE, max
       onProgress?.(allItems.length);
     }
 
-    if (!isLast) {
+    const isCapped = !isLast;
+    if (isCapped) {
       console.warn(`invokePaginated(${resolverKey}) stopped after ${maxPages} pages -- data may be incomplete`);
     }
 
-    return allItems;
+    return { items: allItems, isCapped };
   });
 }

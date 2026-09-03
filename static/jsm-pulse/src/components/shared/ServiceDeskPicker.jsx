@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchAllServiceDesks } from '../../services/serviceRequestService.js'
+import { fetchAllServiceDesks } from '../../services/queueService.js'
 
 const ServiceDeskPicker = ({ value, onChange }) => {
   const [desks, setDesks] = useState(null)
@@ -9,8 +9,8 @@ const ServiceDeskPicker = ({ value, onChange }) => {
     fetchAllServiceDesks()
       .then((result) => {
         if (cancelled) return
-        setDesks(result)
-        if (!value && result.length > 0) onChange(result[0].id)
+        setDesks(result.items)
+        if (!value && result.items.length > 0) onChange(result.items[0].id)
       })
       .catch(() => !cancelled && setDesks([]))
     return () => {

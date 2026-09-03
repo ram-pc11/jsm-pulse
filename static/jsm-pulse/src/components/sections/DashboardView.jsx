@@ -19,7 +19,7 @@ import {
   fetchAiInsights,
   fetchRecommendations,
 } from '../../services/dashboardService.js'
-import { fetchAllServiceDesks } from '../../services/serviceRequestService.js'
+import { fetchAllServiceDesks } from '../../services/queueService.js'
 
 const DashboardView = () => {
   const [summary, setSummary] = useState(null)
@@ -37,7 +37,7 @@ const DashboardView = () => {
       fetchGradeSeverityDistribution(),
       fetchAiInsights(),
       fetchRecommendations(),
-      fetchAllServiceDesks().then((desks) => desks[0]?.id ?? null),
+      fetchAllServiceDesks().then((desks) => desks.items[0]?.id ?? null),
     ])
       .then(([summaryResult, distributionResult, insightsResult, recommendationsResult, deskId]) => {
         if (cancelled) return

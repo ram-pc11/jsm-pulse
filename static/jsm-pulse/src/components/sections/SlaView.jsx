@@ -1,22 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import PageHead from '../layout/PageHead.jsx'
-import PaginatedList from '../shared/PaginatedList.jsx'
-import DataTable from '../shared/DataTable.jsx'
+import ServerPaginatedTable from '../shared/ServerPaginatedTable.jsx'
 import ServiceDeskPicker from '../shared/ServiceDeskPicker.jsx'
-import SectionSummary from '../shared/SectionSummary.jsx'
-import { fetchSlaOverview } from '../../services/slaService.js'
+import { fetchSlaOverviewPage } from '../../services/slaService.js'
 
 const COLUMNS = [
   { key: 'queueName', header: 'Queue' },
   {
     key: 'tracked',
-    header: 'Tracked',
+    header: 'Tracked (sampled)',
     render: (row) => row.sla?.tracked ?? '—',
-  },
-  {
-    key: 'untracked',
-    header: 'Untracked',
-    render: (row) => row.sla?.untracked ?? '—',
   },
   {
     key: 'breached',
@@ -43,7 +36,10 @@ const SlaView = () => {
 
   return (
     <div>
-      <PageHead title="SLA" description="SLA breach rates sampled per queue across a service desk." />
+      <PageHead
+        title="SLA"
+        description="SLA breach rate per queue, sampled from up to 25 tickets per queue. See the Dashboard's At-Risk Queues for a ranked view across the whole desk."
+      />
 
       <div className="mb-4 flex items-center gap-2">
         <span className="text-sm text-slate-500">Service desk:</span>
@@ -51,37 +47,16 @@ const SlaView = () => {
       </div>
 
       {serviceDeskId ? (
-        <PaginatedList fetchAll={(onProgress) => fetchSlaOverview(serviceDeskId, onProgress)} loadingLabel="Sampling SLA data...">
-          {(items) => <SlaContent items={items} />}
-        </PaginatedList>
+        <ServerPaginatedTable
+          fetchPage={(cursor) => fetchSlaOverviewPage(serviceDeskId, cursor)}
+          columns={COLUMNS}
+          rowKey="queueId"
+          deps={[serviceDeskId]}
+        />
       ) : (
         <p className="text-sm text-slate-400">Select a service desk to view SLA data.</p>
       )}
     </div>
-  )
-}
-
-const SlaContent = ({ items }) => {
-  const metrics = useMemo(() => {
-    const withSla = items.filter((item) => item.sla)
-    const totalTracked = withSla.reduce((sum, item) => sum + item.sla.tracked, 0)
-    const totalBreached = withSla.reduce((sum, item) => sum + item.sla.breached, 0)
-    const overallBreachRate = totalTracked > 0 ? totalBreached / totalTracked : 0
-    const worstQueue = withSla.reduce((max, item) => (item.sla.breachRate > (max?.sla.breachRate ?? -1) ? item : max), null)
-
-    return [
-      { label: 'Queues Sampled', value: items.length },
-      { label: 'Overall Breach Rate', value: `${Math.round(overallBreachRate * 100)}%`, accent: true },
-      { label: 'Total Breached (sampled)', value: totalBreached },
-      { label: 'Highest-Risk Queue', value: worstQueue?.queueName ?? '—' },
-    ]
-  }, [items])
-
-  return (
-    <>
-      <SectionSummary metrics={metrics} />
-      <DataTable columns={COLUMNS} rows={items} rowKey="queueId" />
-    </>
   )
 }
 
