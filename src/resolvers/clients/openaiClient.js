@@ -47,18 +47,24 @@ export async function runAgentTurn({ question, history = [], systemPrompt, tools
 
     messages.push(message);
 
-    for (const toolCall of message.tool_calls) {
-      let result;
-      try {
-        const args = JSON.parse(toolCall.function.arguments || '{}');
-        result = await executeTool(toolCall.function.name, args);
-        if (toolCall.function.name === 'search_issues' && !result?.error) {
-          results = result;
+    // Tool calls within one model turn are independent (read-only) requests --
+    // run them concurrently instead of one-at-a-time, since a question like
+    // "which project has the most tickets" can fan out into many calls.
+    const toolResults = await Promise.all(
+      message.tool_calls.map(async (toolCall) => {
+        try {
+          const args = JSON.parse(toolCall.function.arguments || '{}');
+          return { toolCall, result: await executeTool(toolCall.function.name, args) };
+        } catch (error) {
+          return { toolCall, result: { error: true, message: error.message } };
         }
-      } catch (error) {
-        result = { error: true, message: error.message };
-      }
+      })
+    );
 
+    for (const { toolCall, result } of toolResults) {
+      if (toolCall.function.name === 'search_issues' && !result?.error) {
+        results = result;
+      }
       messages.push({
         role: 'tool',
         tool_call_id: toolCall.id,

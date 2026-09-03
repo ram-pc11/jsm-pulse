@@ -3,6 +3,7 @@ import { kvs } from '@forge/kvs';
 import { searchIssues, countIssues } from './clients/jiraSearchClient.js';
 import { getServiceDesks, getQueues, getRequestApprovals, getRequestSla } from './clients/jsmClient.js';
 import { getSlaOverview } from './slaResolvers.js';
+import { getProjectsSummary } from './projectResolvers.js';
 
 const queue = new Queue({ key: 'jsm-pulse-agent-queue' });
 
@@ -45,6 +46,17 @@ export const AGENT_TOOLS = [
     function: {
       name: 'list_service_desks',
       description: 'List all JSM service desks (projects) available.',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_projects_summary',
+      description:
+        'Get ticket counts per JSM project in ONE call, plus total projects, total tickets, and the ' +
+        'busiest project. Always use this for "which project has the most/fewest tickets" or "how many ' +
+        'tickets per project" questions -- do NOT call count_issues once per project, that is much slower.',
       parameters: { type: 'object', properties: {} },
     },
   },
@@ -133,6 +145,8 @@ export async function executeAgentTool(name, args) {
       return { count: await countIssues(args.jql) };
     case 'list_service_desks':
       return getServiceDesks({ cursor: null, pageSize: 50 });
+    case 'get_projects_summary':
+      return getProjectsSummary();
     case 'list_queues':
       return getQueues({ serviceDeskId: args.serviceDeskId, cursor: null, pageSize: 50 });
     case 'get_queue_sla_overview':
@@ -145,6 +159,18 @@ export async function executeAgentTool(name, args) {
       return { error: true, message: `Unknown tool: ${name}` };
   }
 }
+
+// Mirrors static/jsm-pulse/src/components/agents/sectionAssistants.js's keys.
+// The client only ever sends a key (e.g. "projects") -- never trust a raw
+// client string into the system prompt, only this server-side looked-up text.
+const SECTION_HINTS = {
+  dashboard: 'the Dashboard -- overall JSM health across incidents, problems, changes, SLA, and projects',
+  projects: 'Projects -- JSM projects and service desks; use get_projects_summary for per-project ticket counts',
+  incidents: 'Incidents -- issues with issuetype = Incident',
+  problems: 'Problems -- issues with issuetype = Problem',
+  changes: 'Changes -- issues with issuetype = Change',
+  sla: 'SLA -- SLA breach risk and queue-level SLA data',
+};
 
 const MAX_HISTORY_MESSAGES = 10;
 const MAX_MESSAGE_LENGTH = 4000;
@@ -167,8 +193,9 @@ export async function askJsmPulseAgent({ payload }) {
   }
 
   const history = sanitizeHistory(payload?.history);
+  const sectionHint = SECTION_HINTS[payload?.section] ?? null;
 
-  const { jobId } = await queue.push({ body: { question, history } });
+  const { jobId } = await queue.push({ body: { question, history, sectionHint } });
   return { jobId };
 }
 

@@ -9,6 +9,7 @@ import SlaView from './components/sections/SlaView.jsx'
 import ProjectsView from './components/sections/ProjectsView.jsx'
 import SettingsView from './components/settings/SettingsView.jsx'
 import JsmPulseAgentView from './components/agents/JsmPulseAgentView.jsx'
+import AssistantLauncher from './components/agents/AssistantLauncher.jsx'
 
 const VIEWS = {
   dashboard: DashboardView,
@@ -34,6 +35,7 @@ const App = () => {
           <ActiveViewComponent />
         </main>
       </div>
+      <AssistantLauncher activeView={activeView} />
     </div>
   )
 }
