@@ -32,7 +32,12 @@ const Sidebar = ({ activeView, onNavigate }) => {
 
       <div>
         <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Pulse AI Agents</p>
-        <NavItem label="JSM Pulse Agent" pill="New" active={false} onClick={() => {}} />
+        <NavItem
+          label="JSM Pulse Agent"
+          pill="New"
+          active={activeView === 'jsmPulseAgent'}
+          onClick={() => onNavigate('jsmPulseAgent')}
+        />
       </div>
 
       <div>

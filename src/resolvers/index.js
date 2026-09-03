@@ -12,6 +12,7 @@ import {
   getAiInsights,
   getRecommendations,
 } from './dashboardResolvers.js';
+import { askJsmPulseAgent, getJsmPulseAgentJobResult } from './jsmPulseAgentResolvers.js';
 
 const resolver = new Resolver();
 
@@ -31,5 +32,7 @@ resolver.define('getDashboardSummary', getDashboardSummary);
 resolver.define('getGradeSeverityDistribution', getGradeSeverityDistribution);
 resolver.define('getAiInsights', getAiInsights);
 resolver.define('getRecommendations', getRecommendations);
+resolver.define('askJsmPulseAgent', askJsmPulseAgent);
+resolver.define('getJsmPulseAgentJobResult', getJsmPulseAgentJobResult);
 
 export const handler = resolver.getDefinitions();

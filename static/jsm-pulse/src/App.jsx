@@ -8,10 +8,11 @@ import ChangesView from './components/sections/ChangesView.jsx'
 import SlaView from './components/sections/SlaView.jsx'
 import ProjectsView from './components/sections/ProjectsView.jsx'
 import SettingsView from './components/settings/SettingsView.jsx'
-import AssistantLauncher from './components/assistant/AssistantLauncher.jsx'
+import JsmPulseAgentView from './components/agents/JsmPulseAgentView.jsx'
 
 const VIEWS = {
   dashboard: DashboardView,
+  jsmPulseAgent: JsmPulseAgentView,
   incidents: IncidentsView,
   problems: ProblemsView,
   changes: ChangesView,
@@ -33,7 +34,6 @@ const App = () => {
           <ActiveViewComponent />
         </main>
       </div>
-      <AssistantLauncher />
     </div>
   )
 }
