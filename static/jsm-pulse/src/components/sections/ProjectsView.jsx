@@ -42,7 +42,12 @@ const ProjectsView = () => {
       {error && <p className="mb-4 text-sm text-red-600">Failed to load summary: {error.message}</p>}
       {!error && !summary && <LoadingState label="Loading summary..." />}
       {summary && (
-        <SectionSummary metrics={metrics} distribution={summary.distribution} distributionLabel="Tickets by Project" />
+        <SectionSummary
+          metrics={metrics}
+          distribution={summary.distribution}
+          distributionLabel="Tickets by Project"
+          stackDistribution
+        />
       )}
 
       <ServerPaginatedTable fetchPage={fetchProjectsPage} columns={COLUMNS} rowKey="serviceDeskId" />

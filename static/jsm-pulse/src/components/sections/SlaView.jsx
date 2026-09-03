@@ -24,7 +24,7 @@ const COLUMNS = [
       return (
         <span className={row.sla.breachRate > 0.2 ? 'font-medium text-red-600' : 'text-slate-700'}>
           {Math.round(row.sla.breachRate * 100)}%
-          {row.sla.isSampled && <span className="ml-1 text-xs text-slate-400">(sampled)</span>}
+          {row.sla.isSampled && <span className="ml-1 text-xs text-slate-500">(sampled)</span>}
         </span>
       )
     },
@@ -42,7 +42,7 @@ const SlaView = () => {
       />
 
       <div className="mb-4 flex items-center gap-2">
-        <span className="text-sm text-slate-500">Service desk:</span>
+        <span className="text-sm text-black">Service desk:</span>
         <ServiceDeskPicker value={serviceDeskId} onChange={setServiceDeskId} />
       </div>
 
@@ -54,7 +54,7 @@ const SlaView = () => {
           deps={[serviceDeskId]}
         />
       ) : (
-        <p className="text-sm text-slate-400">Select a service desk to view SLA data.</p>
+        <p className="text-sm text-slate-700">Select a service desk to view SLA data.</p>
       )}
     </div>
   )

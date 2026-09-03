@@ -11,7 +11,7 @@ const DistributionBar = ({ distribution }) => {
 
   return (
     <div>
-      <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-100">
+      <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
         {Object.entries(distribution).map(([label, count]) => (
           count > 0 && (
             <div
@@ -23,7 +23,7 @@ const DistributionBar = ({ distribution }) => {
           )
         ))}
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-black">
         {Object.entries(distribution).map(([label, count]) => (
           <span key={label} className="flex items-center gap-1.5">
             <span className={`inline-block h-2 w-2 rounded-full ${SEGMENT_COLORS[label] ?? 'bg-slate-300'}`} />

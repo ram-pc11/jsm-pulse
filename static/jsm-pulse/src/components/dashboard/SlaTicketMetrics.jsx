@@ -7,9 +7,19 @@ const SlaTicketMetrics = ({ metrics }) => {
         label="Incidents + Problems + Changes"
         value={metrics.incidents + metrics.problems + metrics.changes}
         sublabel="Not all ticket types -- see Projects for the site-wide total"
+        color="purple"
       />
-      <MetricCard label="SLA Breach Rate" value={`${Math.round(metrics.slaBreachRate * 100)}%`} accent />
-      <MetricCard label="SLA Met Rate" value={`${Math.round((1 - metrics.slaBreachRate) * 100)}%`} />
+      <MetricCard
+        label="SLA Breach Rate"
+        value={`${Math.round(metrics.slaBreachRate * 100)}%`}
+        accent
+        color="amber"
+      />
+      <MetricCard
+        label="SLA Met Rate"
+        value={`${Math.round((1 - metrics.slaBreachRate) * 100)}%`}
+        color="green"
+      />
     </div>
   )
 }

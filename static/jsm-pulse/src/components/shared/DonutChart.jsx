@@ -18,7 +18,7 @@ const DonutChart = ({ distribution }) => {
   const total = entries.reduce((sum, [, count]) => sum + count, 0)
 
   if (total === 0) {
-    return <p className="text-xs text-slate-400">No data.</p>
+    return <p className="text-xs text-black">No data.</p>
   }
 
   let offset = 0
@@ -54,7 +54,7 @@ const DonutChart = ({ distribution }) => {
           />
         ))}
       </svg>
-      <ul className="flex flex-col gap-1 text-xs text-slate-500">
+      <ul className="flex flex-1 max-h-40 flex-col gap-1 overflow-y-auto pr-1 text-xs text-black">
         {segments.map((segment) => (
           <li key={segment.label} className="flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: segment.color }} />

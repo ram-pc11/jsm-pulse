@@ -12,7 +12,7 @@ const JsmPulseAgentView = () => {
   const [activeTab, setActiveTab] = useState('chat')
 
   return (
-    <div>
+    <div className="">
       <PageHead title="JSM Pulse Agent" description="SLA risk, queue backlogs, and workload across your service desks." />
 
       <div className="mb-4 flex gap-6 border-b border-slate-200">
@@ -21,10 +21,10 @@ const JsmPulseAgentView = () => {
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key)}
-            className={`-mb-px border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
+            className={`-mb-px border-b-2 px-1 pb-3 text-sm font-medium cursor-pointer transition-colors ${
               activeTab === tab.key
                 ? 'border-accent text-accent'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                : 'border-transparent text-black hover:text-accent'
             }`}
           >
             {tab.label}

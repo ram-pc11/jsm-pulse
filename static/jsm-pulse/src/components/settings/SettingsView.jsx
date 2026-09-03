@@ -4,7 +4,7 @@ const SettingsView = () => {
   return (
     <div>
       <PageHead title="Settings" description="App configuration." />
-      <p className="text-sm text-slate-400">No configurable settings yet.</p>
+      <p className="text-sm text-slate-black">No configurable settings yet.</p>
     </div>
   )
 }

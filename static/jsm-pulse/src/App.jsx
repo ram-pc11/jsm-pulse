@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import TopBar from './components/layout/TopBar.jsx'
 import Sidebar from './components/layout/Sidebar.jsx'
 import DashboardView from './components/sections/DashboardView.jsx'
 import IncidentsView from './components/sections/IncidentsView.jsx'
@@ -27,14 +26,11 @@ const App = () => {
   const ActiveViewComponent = VIEWS[activeView] ?? DashboardView
 
   return (
-    <div className="flex h-screen flex-col">
-      <TopBar />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeView={activeView} onNavigate={setActiveView} />
-        <main className="flex-1 overflow-y-auto p-6">
-          <ActiveViewComponent />
-        </main>
-      </div>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar activeView={activeView} onNavigate={setActiveView} />
+      <main className="flex-1 overflow-y-auto bg-white p-6">
+        <ActiveViewComponent />
+      </main>
       <AssistantLauncher activeView={activeView} />
     </div>
   )

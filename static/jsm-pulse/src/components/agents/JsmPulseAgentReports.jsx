@@ -18,7 +18,7 @@ const SLA_COLUMNS = [
       return (
         <span className={row.sla.breachRate > 0.2 ? 'font-medium text-red-600' : 'text-slate-700'}>
           {Math.round(row.sla.breachRate * 100)}%
-          {row.sla.isSampled && <span className="ml-1 text-xs text-slate-400">(sampled)</span>}
+          {row.sla.isSampled && <span className="ml-1 text-xs text-slate-500">(sampled)</span>}
         </span>
       )
     },
@@ -36,16 +36,16 @@ const JsmPulseAgentReports = () => {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-slate-500">Service desk:</span>
+        <span className="text-sm text-black">Service desk:</span>
         <ServiceDeskPicker value={serviceDeskId} onChange={setServiceDeskId} />
       </div>
 
       {!serviceDeskId ? (
-        <p className="text-sm text-slate-400">Select a service desk to view reports.</p>
+        <p className="text-sm text-slate-700">Select a service desk to view reports.</p>
       ) : (
         <>
           <section>
-            <h2 className="mb-3 text-sm font-semibold text-slate-800">SLA Breach Report</h2>
+            <h2 className="mb-3 text-base font-semibold text-black">SLA Breach Report</h2>
             <PaginatedList
               fetchAll={(onProgress) => fetchSlaOverview(serviceDeskId, onProgress)}
               loadingLabel="Sampling SLA data..."
@@ -56,7 +56,7 @@ const JsmPulseAgentReports = () => {
           </section>
 
           <section>
-            <h2 className="mb-3 text-sm font-semibold text-slate-800">Queue Backlog Report</h2>
+            <h2 className="mb-3 text-base font-semibold text-black">Queue Backlog Report</h2>
             <PaginatedList
               fetchAll={(onProgress) => fetchAllQueues(serviceDeskId, onProgress)}
               loadingLabel="Loading queues..."

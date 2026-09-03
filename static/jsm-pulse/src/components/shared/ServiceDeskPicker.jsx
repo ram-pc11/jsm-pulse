@@ -20,11 +20,11 @@ const ServiceDeskPicker = ({ value, onChange }) => {
   }, [])
 
   if (desks === null) {
-    return <p className="text-sm text-slate-400">Loading service desks...</p>
+    return <p className="text-sm text-slate-700">Loading service desks...</p>
   }
 
   if (desks.length === 0) {
-    return <p className="text-sm text-slate-400">No service desks found.</p>
+    return <p className="text-sm text-slate-700">No service desks found.</p>
   }
 
   return (

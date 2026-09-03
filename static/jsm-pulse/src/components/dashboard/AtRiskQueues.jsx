@@ -34,7 +34,7 @@ const AtRiskQueues = ({ serviceDeskId }) => {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="mb-1 text-sm font-semibold text-slate-800">At-Risk Queues</h2>
-        <p className="text-sm text-slate-400">Select a service desk to view queue risk.</p>
+        <p className="text-sm text-slate-4=700">Select a service desk to view queue risk.</p>
       </div>
     )
   }
@@ -47,9 +47,9 @@ const AtRiskQueues = ({ serviceDeskId }) => {
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold text-slate-800">At-Risk Queues</h2>
+      <h2 className="mb-3 text-base font-semibold text-black">At-Risk Queues</h2>
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-400">No queues found.</p>
+        <p className="text-sm text-slate-700">No queues found.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map((queue) => (
@@ -57,7 +57,7 @@ const AtRiskQueues = ({ serviceDeskId }) => {
               <span className="text-slate-700">{queue.queueName}</span>
               <span className="font-medium text-orange-600">
                 {Math.round(queue.sla.breachRate * 100)}% breach
-                {queue.sla.isSampled && <span className="ml-1 text-xs text-slate-400">(sampled)</span>}
+                {queue.sla.isSampled && <span className="ml-1 text-xs text-slate-500">(sampled)</span>}
               </span>
             </li>
           ))}

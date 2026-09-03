@@ -117,7 +117,7 @@ const AgentChat = ({ welcomeText, suggestedPrompts, section = null, bare = false
   return (
     <div
       className={`flex flex-col ${
-        bare ? 'h-full' : 'h-[32rem] rounded-lg border border-slate-200 bg-white shadow-sm'
+        bare ? 'h-full' : 'h-full rounded-lg border border-slate-200 bg-white shadow-sm'
       }`}
     >
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -125,7 +125,7 @@ const AgentChat = ({ welcomeText, suggestedPrompts, section = null, bare = false
           <div
             key={message.id}
             className={`rounded-lg px-4 py-3 text-sm leading-relaxed ${message.results ? 'w-full' : 'max-w-[85%]'} ${
-              message.from === 'assistant' ? 'bg-slate-50 text-slate-700' : 'ml-auto bg-accent text-white'
+              message.from === 'assistant' ? 'bg-slate-50 text-black' : 'ml-auto bg-accent text-white'
             }`}
           >
             {message.text}
