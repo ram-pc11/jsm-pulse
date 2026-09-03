@@ -5,7 +5,7 @@ modules:
       layout: basic
       resolver:
         function: resolver
-      title: JSM Health
+      title: Service Management Lens
   function:
     - key: resolver
       handler: resolvers/index.handler
