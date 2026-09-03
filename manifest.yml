@@ -1,0 +1,25 @@
+modules:
+  jira:globalPage:
+    - key: jsm-health-page
+      resource: main
+      layout: basic
+      resolver:
+        function: resolver
+      title: JSM Health
+  function:
+    - key: resolver
+      handler: resolvers/index.handler
+resources:
+  - key: main
+    path: static/jsm-pulse/dist
+permissions:
+  scopes:
+    - read:servicedesk-request
+    - read:jira-work
+    - read:jira-user
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/c4537cec-f3ae-4942-a399-d93f075aa66e
