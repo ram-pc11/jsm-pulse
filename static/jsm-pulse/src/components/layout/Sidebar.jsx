@@ -99,10 +99,10 @@ const Sidebar = ({ activeView, onNavigate }) => {
 
       <div>
         {!collapsed && (
-          <p className="mb-1 px-3 text-[15px] font-semibold uppercase tracking-wide text-gray-800">Pulse AI Agents</p>
+          <p className="mb-1 px-3 text-[15px] font-semibold uppercase tracking-wide text-gray-800">AI Agents</p>
         )}
         <NavItem
-          label="JSM Pulse Agent"
+          label="JSM Agent"
           pill="New"
           active={activeView === 'jsmPulseAgent'}
           onClick={() => onNavigate('jsmPulseAgent')}
